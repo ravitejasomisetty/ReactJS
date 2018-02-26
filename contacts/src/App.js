@@ -3,11 +3,6 @@ import ListContacts from './ListContacts'
 
 class App extends Component {
 
-  constructor(){
-    super();
-    this.removeContact = this.removeContact.bind(this)
-  }
-
   state = {contacts : [
   {
     "id": "ryan",
@@ -29,7 +24,7 @@ class App extends Component {
   }
 ]}
 
-removeContact (contact){
+removeContact = (contact) => {
   this.setState((state) => {
     return {contacts: state.contacts.filter((c) => c.id !== contact.id)
   }})
