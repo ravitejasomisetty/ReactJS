@@ -11,11 +11,18 @@ state = {
 updateQuery = (query) => {
 	this.setState({query: query.trim()})
 }
+
+clearQuery = () => {
+	this.setState({query:''})
+}
+
 	render(){
+		const {contacts, onDeleteContact} = this.props
+		const {query} = this.state
 		let showingContacts = this.props.contacts
-		if(this.state.query){
-			const match = new RegExp(escapeRegEx(this.state.query),'i')
-			showingContacts = this.props.contacts.filter((contact) => match.test(contact.name))
+		if(query){
+			const match = new RegExp(escapeRegEx(query),'i')
+			showingContacts = contacts.filter((contact) => match.test(contact.name))
 		}
 
 		showingContacts.sort(sortBy('name'))
@@ -26,9 +33,16 @@ updateQuery = (query) => {
 				className='search-contacts'
 				type='text'
 				placeholder='Search contacts'
-				value={this.state.query}
+				value={query}
 				onChange={(event) => this.updateQuery(event.target.value)}/>
 			</div>
+
+			{showingContacts.length !== contacts.length && (
+				<div className='showing-contacts'>
+					<span>Now showing {showingContacts.length} of {contacts.length} total</span>
+					<button onClick={this.clearQuery}>Show all</button>
+				</div>
+				)}
 
 			<ol className='contact-list'>
 				{showingContacts.map(contact => 
@@ -42,7 +56,7 @@ updateQuery = (query) => {
 							<p>{contact.email}</p>
 						</div>
 
-						<button onClick={() => this.props.onDeleteContact(contact)} className='contact-remove'>
+						<button onClick={() => onDeleteContact(contact)} className='contact-remove'>
 						Remove
 						</button>
 					</li>
