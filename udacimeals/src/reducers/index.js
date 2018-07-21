@@ -38,6 +38,19 @@ const initialCalendarState = {
     },
 }
 
+const food = (state = {}, action) => {
+    switch (action.type) {
+        case ADD_RECIPE:
+            const { recipe } = action
+            return {
+                ...state,
+                [recipe.label]: recipe
+            }
+        default:
+            return state
+    }
+}
+
 const calendar = (state = initialCalendarState, action) => {
     const { day, recipe, meal } = action
 
@@ -45,7 +58,7 @@ const calendar = (state = initialCalendarState, action) => {
         case ADD_RECIPE:
             return {
                 ...state,
-                [day]:{
+                [day]: {
                     ...state[day],
                     [meal]: recipe.label
                 }
@@ -53,7 +66,7 @@ const calendar = (state = initialCalendarState, action) => {
         case REMOVE_FROM_CALENDAR:
             return {
                 ...state,
-                [day]:{
+                [day]: {
                     ...state[day],
                     [meal]: null
                 }
