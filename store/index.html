@@ -2,10 +2,11 @@
 
 <head>
     <title>UI + Redux</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.0/redux.min.js" >
+    </script>
 </head>
 
 <body>
-
     <div>
         <h1> Todo List </h1>
         <input id='todo' type='text' placeholder="Add Todo" />
@@ -43,46 +44,12 @@
             return state
         }
 
-        //Root reducer
-        function app(state = {}, action) {
-            return {
-                todos: todos(state.todos, action),
-                goals: goals(state.goals, action)
-            }
-        }
-
-        //My Store
-        function createStore(reducer) {
-            let state
-            let listeners = []
-
-            const getState = () => state
-
-            const subscribe = (listener) => {
-                listeners.push(listener)
-            }
-
-            const unsubscribe = (listener) => {
-                listeners = listeners.filter((l) => l !== listener)
-            }
-
-            const dispatch = (action) => {
-                state = reducer(state, action)
-                listeners.forEach((listener) => listener())
-            }
-
-            return {
-                getState,
-                subscribe,
-                unsubscribe,
-                dispatch
-            }
-        }
-
-        const store = createStore(app)
+        const store = Redux.createStore(Redux.combineReducers({
+            todos, goals
+        }))
 
         store.subscribe(() => {
-            const {todos, goals} = store.getState()
+            const { todos, goals } = store.getState()
 
             document.getElementById('todos').innerHTML = ''
             document.getElementById('goals').innerHTML = ''
@@ -176,7 +143,7 @@
 
         document.getElementById('goalBtn').addEventListener('click', addGoal)
 
-        function addTodoToDOM(todo){
+        function addTodoToDOM(todo) {
             const node = document.createElement('li')
             const text = document.createTextNode(todo.name)
 
@@ -184,7 +151,7 @@
             document.getElementById('todos').appendChild(node)
         }
 
-        function addGoalToDOM(goal){
+        function addGoalToDOM(goal) {
             const node = document.createElement('li')
             const text = document.createTextNode(goal.name)
 
