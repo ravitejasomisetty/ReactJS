@@ -44,9 +44,18 @@
             return state
         }
 
+
+        const logger = (store) => (next) => (action) =>{
+            console.group(action.type)
+            console.log('Dispatched action', action)
+            const result = next(action)
+            console.log('New state:', store.getState())
+            console.groupEnd()
+        }
+
         const store = Redux.createStore(Redux.combineReducers({
             todos, goals
-        }))
+        }), Redux.applyMiddleware(logger))
 
         store.subscribe(() => {
             const { todos, goals } = store.getState()
