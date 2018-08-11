@@ -2,8 +2,10 @@
 
 <head>
     <title>UI + Redux</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.0/redux.min.js" >
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.0/redux.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
 </head>
 
 <body>
@@ -19,6 +21,9 @@
         <button id='goalBtn'>Add</button>
         <ul id='goals'></ul>
     </div>
+
+    <hr />
+    <div id='app'></div>
 
 
     <script type="text/javascript">
@@ -45,7 +50,7 @@
         }
 
 
-        const logger = (store) => (next) => (action) =>{
+        const logger = (store) => (next) => (action) => {
             console.group(action.type)
             console.log('Dispatched action', action)
             const result = next(action)
@@ -167,6 +172,103 @@
             node.appendChild(text)
             document.getElementById('goals').appendChild(node)
         }
+    </script>
+
+    <script type='text/babel'>
+    function List(props){
+        return(
+            <ul>
+                {props.items.map((item) => (
+                    <li key={item.id}>{item.name}</li>
+                ))}
+            </ul>
+        )
+    }
+
+    class Todos extends React.Component{
+        addTodoItem = (e) => {
+            e.preventDefault()
+            const value = this.input.value
+
+            if(!value)
+                return
+
+            this.input.value = ''
+            this.props.store.dispatch({
+                type:'ADD_TODO',
+                todo:{
+                id:10,
+                name: value
+            }
+            })
+        }
+
+        render (){
+            const {todos} = this.props
+            return(
+                <div>
+                    TODOS
+                    <input type='text'
+                    placeholder = 'ADD TODO'
+                    ref={(input) => this.input=input} />
+                    <button onClick={this.addTodoItem}>Add Todo</button>
+                    <List items = {todos} />
+                </div>
+            )
+        }
+    }
+
+    class Goals extends React.Component{
+        addGoalItem = (e) => {
+            e.preventDefault()
+            const value = this.input.value
+
+            if(!value)
+                return
+
+            this.input.value = ''
+            this.props.store.dispatch({
+                type:'ADD_GOAL',
+                goal:{
+                id:10,
+                name: value
+            }
+            })
+        }
+
+        render (){
+            const {goals} = this.props
+            return(
+                <div>
+                    GOALS
+                    <input type='text'
+                    placeholder = 'ADD GOAL'
+                    ref={(input) => this.input=input} />
+                    <button onClick={this.addGoalItem}>Add Goal</button>
+                    <List items={goals}/>
+                </div>
+            )
+        }
+    }
+
+    class App extends React.Component{
+        componentDidMount(){
+            this.props.store.subscribe(() => this.forceUpdate())
+        }
+
+        render(){
+            const {store} = this.props
+            const {todos, goals} = store.getState()
+            return (
+                <div>
+                    <Todos todos={todos} store = {this.props.store}/>
+                    <Goals goals={goals} store = {this.props.store}/>
+                </div>
+            )
+        }
+    }
+
+    ReactDOM.render(<App store={store}/>, document.getElementById('app'))
     </script>
 </body>
 
