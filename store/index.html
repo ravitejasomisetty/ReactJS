@@ -6,6 +6,8 @@
     <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+    <script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
+    <script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script>
 </head>
 
 <body>
@@ -35,6 +37,9 @@
             else if (action.type === 'REMOVE_TODO') {
                 state = state.filter(todo => todo.id !== action.todo.id)
             }
+            else if (action.type == 'RECEIVE_DATA') {
+                state = action.todos
+            }
             return state
         }
 
@@ -46,8 +51,34 @@
             else if (action.type === 'REMOVE_GOAL') {
                 state = state.filter(goal => goal.id !== action.goal.id)
             }
+            else if (action.type == 'RECEIVE_DATA') {
+                state = action.goals
+            }
             return state
         }
+
+        //Subreducer
+        function loading(state = true, action){
+            switch(action.type){
+                case 'RECEIVE_DATA':
+                  return false
+                default:
+                  return state
+            }
+        }
+
+        //action creator
+        function handleInitialData(){
+            return (dispatch) => {Promise.all([API.fetchTodos(), API.fetchGoals()])
+            .then(([todos, goals]) => {
+            dispatch({
+                type:'RECEIVE_DATA',
+                todos,
+                goals
+            })
+          })
+        }
+    }
 
 
         const logger = (store) => (next) => (action) => {
@@ -59,8 +90,8 @@
         }
 
         const store = Redux.createStore(Redux.combineReducers({
-            todos, goals
-        }), Redux.applyMiddleware(logger))
+            todos, goals, loading
+        }), Redux.applyMiddleware(ReduxThunk.default, logger))
 
         store.subscribe(() => {
             const { todos, goals } = store.getState()
@@ -193,14 +224,13 @@
             if(!value)
                 return
 
-            this.input.value = ''
-            this.props.store.dispatch({
-                type:'ADD_TODO',
-                todo:{
-                id:10,
-                name: value
-            }
-            })
+            return API.saveTodo(value)
+                .then((todo) => {
+                    this.input.value = ''
+                    this.props.store.dispatch({
+                    type:'ADD_TODO',
+                    todo
+                })})
         }
 
         render (){
@@ -221,19 +251,19 @@
     class Goals extends React.Component{
         addGoalItem = (e) => {
             e.preventDefault()
+
             const value = this.input.value
 
             if(!value)
                 return
 
-            this.input.value = ''
-            this.props.store.dispatch({
+            return API.saveGoal(value)
+            .then((goal) => {
+                this.input.value = ''
+                this.props.store.dispatch({
                 type:'ADD_GOAL',
-                goal:{
-                id:10,
-                name: value
-            }
-            })
+                goal
+            })})
         }
 
         render (){
@@ -253,12 +283,19 @@
 
     class App extends React.Component{
         componentDidMount(){
-            this.props.store.subscribe(() => this.forceUpdate())
+          this.props.store.dispatch(handleInitialData())
+
+          store.subscribe(() => {this.forceUpdate()})
         }
 
         render(){
             const {store} = this.props
-            const {todos, goals} = store.getState()
+            const {todos, goals, loading} = store.getState()
+
+            if(loading){
+                return (<h3>Loading..</h3>)
+            }
+
             return (
                 <div>
                     <Todos todos={todos} store = {this.props.store}/>
