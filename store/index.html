@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
     <script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
     <script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script>
+    <script src="https://unpkg.com/react-redux@5.0.6/dist/react-redux.min.js"></script>
 </head>
 
 <body>
@@ -58,27 +59,28 @@
         }
 
         //Subreducer
-        function loading(state = true, action){
-            switch(action.type){
+        function loading(state = true, action) {
+            switch (action.type) {
                 case 'RECEIVE_DATA':
-                  return false
+                    return false
                 default:
-                  return state
+                    return state
             }
         }
 
         //action creator
-        function handleInitialData(){
-            return (dispatch) => {Promise.all([API.fetchTodos(), API.fetchGoals()])
-            .then(([todos, goals]) => {
-            dispatch({
-                type:'RECEIVE_DATA',
-                todos,
-                goals
-            })
-          })
+        function handleInitialData() {
+            return (dispatch) => {
+                Promise.all([API.fetchTodos(), API.fetchGoals()])
+                    .then(([todos, goals]) => {
+                        dispatch({
+                            type: 'RECEIVE_DATA',
+                            todos,
+                            goals
+                        })
+                    })
+            }
         }
-    }
 
 
         const logger = (store) => (next) => (action) => {
@@ -305,7 +307,48 @@
         }
     }
 
-    ReactDOM.render(<App store={store}/>, document.getElementById('app'))
+    class Provider extends React.Component{
+        render(){
+            return (
+                <Context.Provider value={this.props.store}>
+                    {this.props.children}
+                </Context.Provider>
+            )
+        }
+    }
+
+    /* Container or connected component that pulls the value
+     from Context and passes it down to the Presentational component. */
+    const ConnectedApp = testConnect((store) => {return store})(App)
+
+    function testConnect(mapToProps){
+        return (Component) => {
+            class Receiver extends React.Component{
+                render(){
+                    return(
+                        <Component store = {mapToProps(this.props.store)} />
+                    )
+                }
+            }
+
+            class ConnectedComponent extends React.Component{
+                render(){
+                    return (
+                        <Context.Consumer>
+                            {(store) => (<Receiver store = {store} />)}
+                        </Context.Consumer>
+                    )
+                }
+            }
+        }
+    }
+
+    const Context = React.createContext()
+
+    ReactDOM.render(
+        <Provider store={store}>
+            <ConnectedApp />
+        </Provider>, document.getElementById('app'))
     </script>
 </body>
 
