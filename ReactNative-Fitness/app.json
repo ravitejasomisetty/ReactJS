@@ -1,5 +1,15 @@
 {
   "expo": {
-    "sdkVersion": "27.0.0"
+    "sdkVersion": "27.0.0",
+    "orientation":"potrait",
+    "name":"Fitness",
+    "description":"A great Fitness tracking app",
+    "icon": "https://tylermcginnis.com/udacifitness-512.png",
+    "notification": {
+      "icon": "https://tylermcginnis.com/udacifitness-45.png"
+    },
+    "ios": {
+      "bundleIdentifier": "org.udacifitness.exp"
+    }
   }
 }
