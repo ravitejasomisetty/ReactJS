@@ -77,7 +77,7 @@ export class AddEntry extends Component {
         submitEntry({ key, entry })
 
         clearLocalNotification()
-        .then(setLocalNotification())
+        setLocalNotification()
     }
 
     reset = () => {
